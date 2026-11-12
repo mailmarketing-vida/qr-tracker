@@ -298,6 +298,7 @@
             <div id="detailLogoTag" style="margin-top: 6px; display:none;"><span class="logo-badge">🖼️ Logo embedded</span></div>
             <div style="margin-top: 10px; display: flex; gap: 8px;">
               <button class="btn btn-ghost" onclick="downloadDetailQR()">⬇ Download QR</button>
+              <button class="btn btn-ghost" onclick="editDestination()">✏️ Edit URL</button>
               <button class="btn btn-danger" onclick="deleteCurrentLink()">🗑 Delete</button>
             </div>
           </div>
@@ -582,6 +583,24 @@
     toast('🗑 Deleted');
     showQrList();
     loadQrList();
+  }
+
+  async function editDestination() {
+    if (!currentLink) return;
+    const newUrl = prompt('New destination URL:', currentLink.originalUrl);
+    if (!newUrl || newUrl === currentLink.originalUrl) return;
+
+    const res = await fetch(`/api/links/${currentLink.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: newUrl.trim() })
+    });
+    const data = await res.json();
+    if (!res.ok) return toast('❌ ' + data.error);
+
+    currentLink.originalUrl = data.originalUrl;
+    document.getElementById('detailUrl').textContent = data.originalUrl;
+    toast('✅ Destination updated. The same QR now points to the new URL');
   }
 
   // ── Dashboard ──────────────────────────────────────────────────────────────

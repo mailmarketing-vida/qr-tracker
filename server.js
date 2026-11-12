@@ -217,6 +217,24 @@ app.get('/api/links/:id', (req, res) => {
   res.json({ ...link, visitCount: visits.length });
 });
 
+// ─── API: Update destination URL (dynamic QR) ────────────────────────────────
+app.put('/api/links/:id', (req, res) => {
+  const { url, name } = req.body;
+  const data = getData();
+  const link = data.links.find((l) => l.id === req.params.id);
+  if (!link) return res.status(404).json({ error: 'Not found' });
+
+  if (url !== undefined) {
+    try { new URL(url); } catch { return res.status(400).json({ error: 'Invalid URL format' }); }
+    link.originalUrl = url;
+    link.updatedAt = new Date().toISOString();
+  }
+  if (name !== undefined && name.trim()) link.name = name.trim();
+
+  saveData(data);
+  res.json(link);
+});
+
 // ─── API: Delete a link ───────────────────────────────────────────────────────
 app.delete('/api/links/:id', (req, res) => {
   const data = getData();
